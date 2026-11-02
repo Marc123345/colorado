@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denver Money Neighborhoods Map | WI Coatings</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
+<style>
+  :root{--bg:#0f1722;--panel:#16212f;--panel2:#1c2a3b;--line:#2a3b52;--text:#e8eef6;--muted:#93a4ba;--accent:#f5a623}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:16px;padding:12px 20px;background:linear-gradient(90deg,#101b29,#152438);border-bottom:1px solid var(--line);z-index:1200;flex-wrap:wrap}
+  .brand{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+  header h1{font-size:17px;font-weight:700}
+  .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tabs{display:flex;gap:4px;background:#0f1a28;border:1px solid var(--line);border-radius:10px;padding:3px;margin-left:auto}
+  .tab{font:600 12.5px/1 inherit;font-family:inherit;border:0;background:transparent;color:var(--muted);border-radius:7px;padding:9px 13px;cursor:pointer;white-space:nowrap}
+  .tab:hover{color:var(--text)}
+  .tab.on{background:var(--accent);color:#0d1420}
+  .pop{text-align:right;min-width:128px}
+  .pop b{display:block;font-size:21px;line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums}
+  .pop span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .wrap{flex:1;display:flex;min-height:0;position:relative}
+  #map{flex:1;background:#0b1320}
+  aside{width:330px;flex:0 0 330px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:14px;z-index:1100}
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .side-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 4px 8px}
+  .side-title:first-child{margin-top:2px}
+  .zone-card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .zone-card.off{opacity:.45}
+  .zone-head{display:flex;align-items:center;gap:9px}
+  .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+  .zone-head b{font-size:13.5px;flex:1}
+  .zbtn{font-size:11px;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:6px;padding:4px 9px;cursor:pointer}
+  .zbtn:hover{background:#25384f}
+  .zone-card p{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .towns{list-style:none;margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+  .towns li{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:3px 4px;border-radius:5px;cursor:pointer}
+  .towns li:hover{background:#25384f}
+  .towns .tn{flex:1;min-width:0}
+  .towns .td{color:var(--muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .note{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.35);border-radius:10px;padding:10px 12px;font-size:11.5px;color:#f0d9ad;line-height:1.5;margin-top:8px}
+  .foot{margin-top:14px;font-size:10.5px;color:#7d90ab;line-height:1.5}
+  .foot a{color:var(--accent);text-decoration:none}
+  .leaflet-popup-content-wrapper{background:var(--panel2);color:var(--text);border-radius:10px;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .leaflet-popup-tip{background:var(--panel2)}
+  .leaflet-popup-content{margin:12px 14px;font:12.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .pp h3{font-size:14px;margin-bottom:2px}
+  .pp .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-radius:20px;padding:2px 8px;margin-bottom:7px;color:#0d1420;font-weight:700}
+  .pp p{color:#c3d0e0}
+  .pp .dist{margin-top:6px;font-size:11px;color:var(--muted)}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+  .leaflet-control-attribution{background:rgba(15,23,34,.8)!important;color:#7d90ab!important}
+  .leaflet-control-attribution a{color:#9db0ca!important}
+  .leaflet-bar a{background:var(--panel2);color:var(--text);border-bottom:1px solid var(--line)}
+  .leaflet-bar a:hover{background:#25384f}
+  .city-label{background:transparent;border:none;box-shadow:none;color:#dbe6f3;font-size:10.5px;font-weight:600;text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap}
+  .city-label::before{display:none}
+  .ring-label{background:rgba(15,23,34,.75);border:none;box-shadow:none;color:#c3d0e0;font-size:10px;font-weight:600;border-radius:4px;padding:1px 5px;white-space:nowrap}
+  .ring-label::before{display:none}
+  .mob-toggle{display:none}
+  @media (max-width:820px){
+    header{padding:10px 14px;gap:8px 12px}
+    header .ttl{flex:1;min-width:0}
+    header h1{font-size:15px}
+    .sub{display:none}
+    .pop{min-width:0}
+    .pop b{font-size:18px}
+    .tabs{width:100%;margin-left:0;order:3}
+    .tab{flex:1;padding:9px 4px}
+    aside{position:absolute;left:0;top:0;bottom:0;width:min(330px,86vw);flex:none;transform:translateX(-100%);transition:transform .2s ease;box-shadow:8px 0 30px rgba(0,0,0,.5);visibility:hidden}
+    aside.open{transform:translateX(0);visibility:visible}
+    .mob-toggle{display:block;position:absolute;right:12px;top:12px;z-index:1150;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="ttl">
+    <div class="brand">WI Coatings</div>
+    <h1>Denver Money Neighborhoods</h1>
+    <div class="sub">Residential coating targets, by direction from Thornton</div>
+  </div>
+  <div class="tabs" role="group" aria-label="Show areas">
+    <button class="tab" data-d="all">All</button>
+    <button class="tab" data-d="north">North</button>
+    <button class="tab" data-d="central">Central</button>
+    <button class="tab" data-d="west">West</button>
+    <button class="tab" data-d="south">South</button>
+  </div>
+  <div class="pop"><b id="popNum" aria-live="polite">0</b><span>Pins on the map</span></div>
+</header>
+<div class="wrap">
+  <button class="mob-toggle" id="mobToggle">☰ Areas</button>
+  <aside id="sidebar">
+    <div class="side-title">Areas, closest to the shop first</div>
+    <div id="cards"></div>
+    <div class="side-title">How to read it</div>
+    <div class="note"><b>Radius:</b> every pin sits inside a 30-mile circle on downtown Denver. That covers the Denver metro, about 3 million people, and Boulder County, about 330,000.</div>
+    <div class="note"><b>Home values:</b> medians in these neighborhoods run from about $900,000 to several million.</div>
+    <div class="note"><b>Boulder:</b> modern flat-roof homes and owners who pay for energy efficiency, which is how you sell a reflective coating on a house.</div>
+    <div class="foot">Distances are straight-line from Thornton city center, not from the shop address. Morrison and Superior positions are approximate.<br><br>
+    Prepared by <a href="https://roofcoatleads.com" target="_blank" rel="noopener">RoofCoat Leads</a></div>
+  </aside>
+  <div id="map"></div>
+</div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+/* ---------------------------------- data ---------------------------------- */
+const DOWNTOWN=[39.739,-104.990], THORNTON=[39.868,-104.972];
+const AREAS={
+  north:{name:"North and Boulder County",color:"#27ae60",desc:"Closest to the shop. Boulder has a lot of modern flat-roof homes, and its owners pay for energy efficiency."},
+  central:{name:"Central Denver",color:"#2f80ed",desc:"Old money and new money. A lot of modern infill with flat roofs: the residential coating sweet spot."},
+  west:{name:"West and the foothills",color:"#9b59b6",desc:"Mountain homes here lean toward metal and low-slope roofs."},
+  south:{name:"South and southeast",color:"#e67e22",desc:"The richest belt in the state. Large lots and custom homes."}
+};
+const PINS=[
+  {n:"Anthem, Broomfield",a:"north",ll:[39.955,-105.055],b:"Near Thornton."},
+  {n:"Heritage Todd Creek",a:"north",ll:[39.978,-104.918],b:"Thornton's own high-end community."},
+  {n:"Candelas and Leyden Rock",a:"north",ll:[39.864,-105.183],b:"Arvada."},
+  {n:"Louisville",a:"north",ll:[39.978,-105.132],b:"Boulder County."},
+  {n:"Superior",a:"north",ll:[39.953,-105.169],b:"Boulder County."},
+  {n:"Erie",a:"north",ll:[40.050,-105.050],b:"Boulder and Weld county line."},
+  {n:"Boulder",a:"north",ll:[40.015,-105.271],star:1,b:"Especially Mapleton Hill, Chautauqua and Table Mesa. Modern flat-roof homes and owners who pay for energy efficiency."},
+  {n:"Niwot",a:"north",ll:[40.104,-105.171],b:"Boulder County."},
+
+  {n:"LoHi, Berkeley, Sloan's Lake",a:"central",ll:[39.767,-105.012],b:"Newer flat-roof townhomes."},
+  {n:"Hilltop and Crestmoor",a:"central",ll:[39.719,-104.925],b:"Modern infill with flat roofs."},
+  {n:"Cherry Creek North, Country Club",a:"central",ll:[39.717,-104.953],star:1,b:"Modern infill with flat roofs."},
+  {n:"Wash Park, Bonnie Brae, Belcaro",a:"central",ll:[39.697,-104.955],b:"Modern infill with flat roofs."},
+
+  {n:"Golden and Genesee",a:"west",ll:[39.690,-105.270],b:"Metal and low-slope roofs."},
+  {n:"Morrison and Willow Springs",a:"west",ll:[39.653,-105.191],b:"Metal and low-slope roofs."},
+  {n:"Ken Caryl Valley",a:"west",ll:[39.577,-105.157],b:"Metal and low-slope roofs."},
+  {n:"Evergreen",a:"west",ll:[39.633,-105.317],b:"Metal and low-slope roofs."},
+
+  {n:"Cherry Hills Village",a:"south",ll:[39.642,-104.959],star:1,b:"One of the top two. Mostly large lots and custom homes."},
+  {n:"Columbine Valley and Bow Mar",a:"south",ll:[39.625,-105.048],b:"Along the Platte, southwest of Littleton."},
+  {n:"Greenwood Village",a:"south",ll:[39.617,-104.951],star:1,b:"One of the top two. Mostly large lots and custom homes."},
+  {n:"Highlands Ranch",a:"south",ll:[39.554,-104.969],b:"100,000 people, solidly upper-middle."},
+  {n:"Lone Tree",a:"south",ll:[39.552,-104.897],b:"South metro."},
+  {n:"Parker: Pradera and Timbers",a:"south",ll:[39.518,-104.761],b:"Gated areas."},
+  {n:"Castle Pines",a:"south",ll:[39.459,-104.896],b:"Castle Pines and Castle Pines Village."}
+];
+/* ------------------------------- map setup -------------------------------- */
+const map=L.map('map',{zoomSnap:.25}).setView(DOWNTOWN,10);
+const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:16}).addTo(map);
+let swapped=false;
+base.on('tileerror',()=>{if(swapped)return;swapped=true;map.removeLayer(base);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);});
+const circle=L.circle(DOWNTOWN,{radius:30*1609.34,color:"#f5a623",weight:2,dashArray:"7 6",fillColor:"#f5a623",fillOpacity:.05,interactive:false}).addTo(map);
+L.marker([DOWNTOWN[0]-30/69.05,DOWNTOWN[1]],{opacity:0,interactive:false,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0]})})
+ .bindTooltip("30 mi from downtown",{permanent:true,direction:'center',className:'ring-label'}).addTo(map);
+L.circleMarker(THORNTON,{radius:10,color:"#fff",weight:2.5,fillColor:"#f5a623",fillOpacity:1})
+ .bindPopup(`<div class="pp"><h3>WI Coatings</h3><span class="tag" style="background:#f5a623">Thornton</span><p>Based on the north side of Denver. Hector Barragan.</p></div>`)
+ .bindTooltip("WI Coatings",{permanent:true,direction:'right',offset:[11,0],className:'city-label lbl-star'}).addTo(map);
+
+const groups={};
+Object.keys(AREAS).forEach(k=>groups[k]=L.layerGroup().addTo(map));
+PINS.forEach(p=>{
+  p.mi=Math.round(map.distance(THORNTON,p.ll)/1609.34);
+  const c=AREAS[p.a].color;
+  p.marker=L.circleMarker(p.ll,{radius:p.star?9:7,color:"#0d1420",weight:1.5,fillColor:c,fillOpacity:.95})
+   .bindPopup(`<div class="pp"><h3>${p.n}</h3><span class="tag" style="background:${c}">${AREAS[p.a].name}</span><p>${p.b}</p><div class="dist">${p.mi} mi from Thornton</div></div>`)
+   .bindTooltip(p.n,{permanent:true,direction:'right',offset:[9,0],className:'city-label'+(p.star&&p.a!=='central'?' lbl-star':'')});
+  p.marker.addTo(groups[p.a]);
+});
+/* ------------------------------- interaction ------------------------------ */
+let view="all";
+function labels(){const z=map.getZoom();document.querySelectorAll('.city-label').forEach(el=>{el.style.display=(z>=10.5||el.classList.contains('lbl-star'))?'':'none'})}
+map.on('zoomend',labels);
+function closeSide(){if(window.innerWidth<=820)document.getElementById('sidebar').classList.remove('open')}
+function show(k){
+  view=k;
+  Object.keys(groups).forEach(g=>(k==="all"||k===g)?groups[g].addTo(map):map.removeLayer(groups[g]));
+  const shown=PINS.filter(p=>k==="all"||p.a===k);
+  document.getElementById('popNum').textContent=shown.length;
+  document.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.d===k;t.classList.toggle('on',on);t.setAttribute('aria-pressed',on)});
+  document.querySelectorAll('.zone-card').forEach(c=>c.classList.toggle('off',k!=="all"&&c.dataset.a!==k));
+  const b=k==="all"?circle.getBounds():L.latLngBounds(shown.map(p=>p.ll)).extend(THORNTON);
+  map.fitBounds(b,{padding:[30,30],maxZoom:12,animate:false});
+  labels();
+}
+document.getElementById('cards').innerHTML=Object.keys(AREAS).map(k=>{const a=AREAS[k];return `
+  <div class="zone-card" data-a="${k}"><div class="zone-head"><span class="dot" style="background:${a.color}"></span><b>${a.name}</b><button class="zbtn" data-go="${k}">Show</button></div>
+  <p>${a.desc}</p><ul class="towns">${PINS.filter(p=>p.a===k).map(p=>`<li data-pin="${PINS.indexOf(p)}"><span class="tn">${p.n}</span><span class="td">${p.mi} mi</span></li>`).join('')}</ul></div>`}).join('');
+document.getElementById('cards').addEventListener('click',e=>{
+  const go=e.target.closest('[data-go]');
+  if(go){show(go.dataset.go);closeSide();return}
+  const li=e.target.closest('[data-pin]'); if(!li) return;
+  const p=PINS[+li.dataset.pin];
+  if(view!=="all"&&view!==p.a) show(p.a);
+  map.setView(p.ll,Math.max(map.getZoom(),12),{animate:false});
+  p.marker.openPopup(); closeSide();
+});
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>show(t.dataset.d)));
+document.getElementById('mobToggle').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+window.addEventListener('resize',()=>map.invalidateSize());
+show("all");
+</script>
+</body>
+</html>

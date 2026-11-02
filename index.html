@@ -101,13 +101,17 @@
     <div class="side-title">Territory zones</div>
     <label class="check" id="orWrap"><input type="checkbox" id="orBox" checked>
       <span>Include Ontario, Oregon<small>Malheur County, 32,000. Needs an Oregon CCB licence.</small></span></label>
+    <label class="check"><input type="checkbox" id="moneyBox" checked>
+      <span>Show money neighborhoods<small>Residential coating targets, marked with gold rings. All of them sit in Zone A.</small></span></label>
     <div id="zoneCards"></div>
+    <div class="zone-card" id="moneyCard"><div class="zone-head"><span class="dot" style="background:#f5a623"></span><b>Money neighborhoods</b><span class="cnt" id="moneyCnt"></span></div>
+      <p>Where high-value homes concentrate, for the residential side of the campaign.</p><ul class="towns" id="moneyList"></ul></div>
     <div class="side-title">How to read it</div>
     <div class="note"><b>Biggest number:</b> run all three zones as one campaign. About 1,230,000 people.</div>
     <div class="note"><b>Most efficient:</b> start with Zone A at the standard $1,500 plus $50 a day. It is one contiguous metro, and a 30-mile radius on Boise covers it. Zone C is the upsell once the first month works.</div>
     <div class="note"><b>Roofs matter more than people.</b> Population is the headline, but commercial roof count is the real asset, and that sits in Zones A and C.</div>
     <div class="note"><b>Zone C is two hours each way.</b> It only makes sense for a contractor who will travel for commercial jobs. Many coaters will for a 40,000 square foot roof.</div>
-    <div class="foot">Ring distances on the map are straight-line. Mileage in the lists is by road from Boise. Commercial markers are approximate.<br><br>
+    <div class="foot">Ring distances on the map are straight-line. Mileage in the lists is by road from Boise. Commercial markers, Boise Foothills and Warm Springs Mesa are approximate.<br><br>
     Sources: Idaho Business Review, Treasure Valley population grows 150,000 in six years; COMPASS population estimates; CBRE emerging industrial market Boise.<br><br>
     Prepared by <a href="https://roofcoatleads.com" target="_blank" rel="noopener">RoofCoat Leads</a></div>
   </aside>
@@ -165,6 +169,18 @@ const STOCK = [
   {n:"Garrity and the Idaho Center",ll:[43.5955,-116.5077],b:"Heavy industrial along I-84 in Nampa."},
   {n:"Karcher",ll:[43.562,-116.598],b:"Industrial and retail on the west side of Nampa."},
   {n:"Sky Ranch and food plants",ll:[43.640,-116.640],b:"Sky Ranch Business Park, Simplot and food processing in Caldwell."}
+];
+
+/* the money neighborhoods; hollow rings so Eagle sits around its town pin.
+   approx = no coordinates in the brief */
+const MONEY = [
+  {n:"Eagle",ll:[43.695,-116.354],b:"Two Rivers and Banbury Meadows. The top residential market in the valley."},
+  {n:"North End and Highlands",ll:[43.635,-116.205],b:"Boise's established high-value neighborhoods."},
+  {n:"Harris Ranch and Barber Valley",ll:[43.577,-116.135],b:"Southeast Boise."},
+  {n:"Hidden Springs",ll:[43.730,-116.265],b:"Foothills community north of Boise."},
+  {n:"Boise Foothills",ll:[43.665,-116.180],approx:1,b:"Somerset Ridge and Quail Ridge."},
+  {n:"Warm Springs Mesa",ll:[43.592,-116.150],approx:1,b:"East Boise."},
+  {n:"Spurwing and Paramount",ll:[43.655,-116.395],b:"North Meridian."}
 ];
 
 /* east of the stop line, shown for context only */
@@ -241,6 +257,12 @@ STOCK.forEach(s=>{
    .bindTooltip(s.n,{direction:'top'}).bindPopup(pop(s.n,"Commercial stock","#fff",s.b)).addTo(stockGroup);
 });
 
+const moneyGroup=L.layerGroup().addTo(map);
+MONEY.forEach(m=>{
+  L.circleMarker(m.ll,{radius:13,color:"#f5a623",weight:2.5,fillColor:"#f5a623",fillOpacity:.12})
+   .bindTooltip(m.n,{direction:'top'}).bindPopup(pop(m.n,"Money neighborhood","#f5a623",m.b)).addTo(moneyGroup);
+});
+
 /* the east: stop line, context towns, Prime Guard */
 const eastGroup=L.layerGroup().addTo(map);
 const stopLine=[[41.95,-113.05],[44.45,-113.05]];
@@ -257,6 +279,18 @@ L.circleMarker(PRIME.ll,{radius:9,color:"#fff",weight:2,fillColor:"#e74c3c",fill
  .bindTooltip(PRIME.n,{permanent:true,direction:'left',offset:[-10,0],className:'city-label lbl-star'}).addTo(eastGroup);
 
 /* ------------------------------- interaction ------------------------------ */
+document.getElementById('moneyCnt').textContent=MONEY.length;
+document.getElementById('moneyList').innerHTML=MONEY.map((m,i)=>`<li data-m="${i}"><span class="tn">${m.n}</span></li>`).join('');
+document.getElementById('moneyList').addEventListener('click',e=>{
+  const li=e.target.closest('[data-m]'); if(!li) return;
+  const box=document.getElementById('moneyBox');
+  if(!box.checked){box.checked=true;moneyGroup.addTo(map);}
+  const m=MONEY[+li.dataset.m];
+  map.setView(m.ll,12,{animate:false});
+  moneyGroup.getLayers()[+li.dataset.m].openPopup();
+  if(window.innerWidth<=820) document.getElementById('sidebar').classList.remove('open');
+});
+document.getElementById('moneyBox').addEventListener('change',e=>e.target.checked?moneyGroup.addTo(map):map.removeLayer(moneyGroup));
 const PLANS={a:["a"],b:["a","b"],c:["a","b","c"]};
 const fmt=n=>n.toLocaleString('en-US');
 let plan="a", oregon=true;
