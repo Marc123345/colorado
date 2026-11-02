@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Southwest Idaho Territory Map | RoofCoat Leads</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
+<style>
+  :root{--bg:#0f1722;--panel:#16212f;--panel2:#1c2a3b;--line:#2a3b52;--text:#e8eef6;--muted:#93a4ba;--accent:#f5a623}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:16px;padding:12px 20px;background:linear-gradient(90deg,#101b29,#152438);border-bottom:1px solid var(--line);z-index:1200;flex-wrap:wrap}
+  .brand{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+  header h1{font-size:17px;font-weight:700}
+  .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tabs{display:flex;gap:4px;background:#0f1a28;border:1px solid var(--line);border-radius:10px;padding:3px;margin-left:auto}
+  .tab{font:600 12.5px/1 inherit;font-family:inherit;border:0;background:transparent;color:var(--muted);border-radius:7px;padding:9px 13px;cursor:pointer;white-space:nowrap}
+  .tab:hover{color:var(--text)}
+  .tab.on{background:var(--accent);color:#0d1420}
+  .pop{text-align:right;min-width:128px}
+  .pop b{display:block;font-size:21px;line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums}
+  .pop span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .wrap{flex:1;display:flex;min-height:0;position:relative}
+  #map{flex:1;background:#0b1320}
+  aside{width:330px;flex:0 0 330px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:14px;z-index:1100}
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .side-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 4px 8px}
+  .side-title:first-child{margin-top:2px}
+  .check{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.4;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+  .check input{margin-top:2px;accent-color:var(--accent)}
+  .check small{display:block;color:var(--muted);font-size:11px}
+  .zone-card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+  .zone-card:hover{border-color:#3d557a}
+  .zone-card.off{opacity:.45}
+  .zone-head{display:flex;align-items:center;gap:9px}
+  .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+  .zone-head b{font-size:13.5px;flex:1}
+  .cnt{font-size:11px;color:var(--text);background:#22334a;border-radius:20px;padding:2px 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .zone-card p{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .towns{list-style:none;margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+  .towns li{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:3px 4px;border-radius:5px;cursor:pointer}
+  .towns li:hover{background:#25384f}
+  .towns .tn{flex:1;min-width:0}
+  .towns .td{color:var(--muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .note{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.35);border-radius:10px;padding:10px 12px;font-size:11.5px;color:#f0d9ad;line-height:1.5;margin-top:8px}
+  .foot{margin-top:14px;font-size:10.5px;color:#7d90ab;line-height:1.5}
+  .foot a{color:var(--accent);text-decoration:none}
+  .leaflet-popup-content-wrapper{background:var(--panel2);color:var(--text);border-radius:10px;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .leaflet-popup-tip{background:var(--panel2)}
+  .leaflet-popup-content{margin:12px 14px;font:12.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .pp h3{font-size:14px;margin-bottom:2px}
+  .pp .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-radius:20px;padding:2px 8px;margin-bottom:7px;color:#0d1420;font-weight:700}
+  .pp p{color:#c3d0e0}
+  .pp .dist{margin-top:6px;font-size:11px;color:var(--muted)}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+  .leaflet-control-attribution{background:rgba(15,23,34,.8)!important;color:#7d90ab!important}
+  .leaflet-control-attribution a{color:#9db0ca!important}
+  .leaflet-bar a{background:var(--panel2);color:var(--text);border-bottom:1px solid var(--line)}
+  .leaflet-bar a:hover{background:#25384f}
+  .city-label{background:transparent;border:none;box-shadow:none;color:#dbe6f3;font-size:10.5px;font-weight:600;text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap}
+  .city-label::before{display:none}
+  .ring-label{background:rgba(15,23,34,.75);border:none;box-shadow:none;color:#c3d0e0;font-size:10px;font-weight:600;border-radius:4px;padding:1px 5px;white-space:nowrap}
+  .ring-label::before{display:none}
+  .mob-toggle{display:none}
+  @media (max-width:820px){
+    header{padding:10px 14px;gap:8px 12px}
+    header .ttl{flex:1;min-width:0}
+    header h1{font-size:15px}
+    .sub{display:none}
+    .pop{min-width:0}
+    .pop b{font-size:18px}
+    .tabs{width:100%;margin-left:0;order:3}
+    .tab{flex:1;padding:9px 4px}
+    aside{position:absolute;left:0;top:0;bottom:0;width:min(330px,86vw);flex:none;transform:translateX(-100%);transition:transform .2s ease;box-shadow:8px 0 30px rgba(0,0,0,.5);visibility:hidden}
+    aside.open{transform:translateX(0);visibility:visible}
+    .mob-toggle{display:block;position:absolute;right:12px;top:12px;z-index:1150;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="ttl">
+    <div class="brand">RoofCoat Leads</div>
+    <h1>Southwest Idaho Territory Map</h1>
+    <div class="sub">Centered on Boise · all three zones open</div>
+  </div>
+  <div class="tabs" role="group" aria-label="Campaign size">
+    <button class="tab" data-plan="a">Zone A</button>
+    <button class="tab" data-plan="b">A + B</button>
+    <button class="tab" data-plan="c">A + B + C</button>
+  </div>
+  <div class="pop"><b id="popNum" aria-live="polite">876,760</b><span>People reached</span></div>
+</header>
+
+<div class="wrap">
+  <button class="mob-toggle" id="mobToggle">☰ Zones</button>
+  <aside id="sidebar">
+    <div class="side-title">Territory zones</div>
+    <label class="check" id="orWrap"><input type="checkbox" id="orBox" checked>
+      <span>Include Ontario, Oregon<small>Malheur County, 32,000. Needs an Oregon CCB licence.</small></span></label>
+    <div id="zoneCards"></div>
+    <div class="side-title">How to read it</div>
+    <div class="note"><b>Biggest number:</b> run all three zones as one campaign. About 1,230,000 people.</div>
+    <div class="note"><b>Most efficient:</b> start with Zone A at the standard $1,500 plus $50 a day. It is one contiguous metro, and a 30-mile radius on Boise covers it. Zone C is the upsell once the first month works.</div>
+    <div class="note"><b>Roofs matter more than people.</b> Population is the headline, but commercial roof count is the real asset, and that sits in Zones A and C.</div>
+    <div class="note"><b>Zone C is two hours each way.</b> It only makes sense for a contractor who will travel for commercial jobs. Many coaters will for a 40,000 square foot roof.</div>
+    <div class="foot">Ring distances on the map are straight-line. Mileage in the lists is by road from Boise. Commercial markers are approximate.<br><br>
+    Sources: Idaho Business Review, Treasure Valley population grows 150,000 in six years; COMPASS population estimates; CBRE emerging industrial market Boise.<br><br>
+    Prepared by <a href="https://roofcoatleads.com" target="_blank" rel="noopener">RoofCoat Leads</a></div>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+/* ---------------------------------- data ---------------------------------- */
+const BOISE = [43.615,-116.202];
+const ZONES = {
+  a:{name:"Zone A · Treasure Valley", span:"0 to 30 miles", pop:876760, popLabel:"876,760", color:"#2f80ed",
+     desc:"Ada and Canyon counties, up 150,000 people in six years. One contiguous metro, all of it about 35 minutes from Boise. Single-story strip retail, warehouses, schools and churches: the flat-roof stock a coating campaign feeds on."},
+  b:{name:"Zone B · 60-mile ring", span:"30 to 60 miles", pop:141000, popLabel:"+141,000", color:"#27ae60",
+     desc:"Small counties around the metro. More people, but fewer commercial roofs than A or C."},
+  c:{name:"Zone C · Magic Valley", span:"100 to 130 miles down I-84", pop:210000, popLabel:"+210,000", color:"#e67e22",
+     desc:"Twin Falls and the towns around it. Dairies, food processing plants and ag warehouses, which means a lot of low-slope metal roof. Two hours each way from Boise."}
+};
+const OREGON_POP = 32000;
+
+const TOWNS = [
+  /* zone a, core */
+  {n:"Boise",z:"a",ll:BOISE,star:1,pop:"256,000",d:"Center",b:"The anchor, with the densest commercial stock in the state."},
+  {n:"Garden City",z:"a",ll:[43.650,-116.275],pop:"13,000",d:"4 mi",b:"The Chinden Boulevard industrial strip."},
+  {n:"Meridian",z:"a",ll:[43.612,-116.392],star:1,pop:"152,000",d:"10 mi",b:"The fastest growing city in the state. Franklin Road and Eagle Road retail corridors."},
+  {n:"Eagle",z:"a",ll:[43.695,-116.354],pop:"38,000",d:"10 mi",b:"Higher-end residential."},
+  {n:"Kuna",z:"a",ll:[43.492,-116.420],pop:"39,000",d:"17 mi",b:"The newest subdivisions in the valley."},
+  /* zone a, rest of the valley */
+  {n:"Star",z:"a",ll:[43.692,-116.493],pop:"25,000",d:"20 mi",b:"Growing residential town between Eagle and Middleton."},
+  {n:"Nampa",z:"a",ll:[43.574,-116.564],star:1,pop:"127,000",d:"20 mi",b:"Canyon County's hub. Heavy industrial along I-84 around Garrity, Karcher and the Idaho Center."},
+  {n:"Caldwell",z:"a",ll:[43.663,-116.687],pop:"83,000",d:"27 mi",b:"Sky Ranch Business Park, Simplot and food processing plants."},
+  {n:"Middleton",z:"a",ll:[43.707,-116.620],pop:"15,000",d:"28 mi",b:"Canyon County town on the north side of the valley."},
+  /* zone b */
+  {n:"Mountain Home",z:"b",ll:[43.133,-115.691],star:1,pop:"30,000",county:"Elmore County",d:"47 mi",b:"Air Force base town on I-84. Elmore County, 30,000; Mountain Home itself about 16,000."},
+  {n:"Emmett",z:"b",ll:[43.873,-116.499],pop:"21,000",county:"Gem County",d:"30 mi",b:"Gem County, 21,000; Emmett itself about 8,000. Close to Boise, but outside the Ada and Canyon count."},
+  {n:"Payette",z:"b",ll:[44.078,-116.934],pop:"27,000",county:"Payette County",b:"Payette County with Payette and Fruitland, 27,000."},
+  {n:"Weiser",z:"b",ll:[44.251,-116.969],pop:"11,000",county:"Washington County",b:"Washington County, 11,000."},
+  {n:"Murphy",z:"b",ll:[43.218,-116.552],pop:"12,000",county:"Owyhee County",b:"County seat of Owyhee County, 12,000."},
+  {n:"Idaho City",z:"b",ll:[43.829,-115.834],pop:"8,000",county:"Boise County",b:"County seat of Boise County, 8,000."},
+  {n:"Ontario, OR",z:"b",ll:[44.027,-116.963],pop:"32,000",county:"Malheur County, OR",d:"55 mi",or:1,b:"Malheur County, 32,000; Ontario itself about 12,000. Needs an Oregon CCB licence."},
+  /* zone c */
+  {n:"Twin Falls",z:"c",ll:[42.563,-114.460],star:1,pop:"55,000",d:"128 mi",b:"The hub of the Magic Valley. Two hours from Boise."},
+  {n:"Jerome",z:"c",ll:[42.724,-114.519],b:"Dairy and food processing country north of the Snake River."},
+  {n:"Gooding",z:"c",ll:[42.939,-114.713],b:"Dairies and ag buildings."},
+  {n:"Burley",z:"c",ll:[42.536,-113.793],b:"Food processing and ag warehouses on I-84."},
+  {n:"Rupert",z:"c",ll:[42.619,-113.677],b:"Ag warehouses and processing at the east end of the valley."}
+];
+
+/* commercial stock named in the brief; positions approximate */
+const STOCK = [
+  {n:"Boise Airport and Gowen Road",ll:[43.552,-116.200],b:"Industrial zone along I-84."},
+  {n:"Micron campus",ll:[43.5275,-116.1444],b:"Southeast Boise."},
+  {n:"Eagle Road and Franklin Road",ll:[43.606,-116.353],b:"Meridian retail corridors."},
+  {n:"Ten Mile interchange",ll:[43.590,-116.431],b:"Business parks on I-84."},
+  {n:"Garrity and the Idaho Center",ll:[43.5955,-116.5077],b:"Heavy industrial along I-84 in Nampa."},
+  {n:"Karcher",ll:[43.562,-116.598],b:"Industrial and retail on the west side of Nampa."},
+  {n:"Sky Ranch and food plants",ll:[43.640,-116.640],b:"Sky Ranch Business Park, Simplot and food processing in Caldwell."}
+];
+
+/* east of the stop line, shown for context only */
+const EAST = [
+  {n:"Pocatello",ll:[42.871,-112.445],b:"Past the stop line. Not part of this campaign."},
+  {n:"Idaho Falls",ll:[43.492,-112.034],b:"Prime Guard's area, roughly four hours from Boise. Not part of this campaign."}
+];
+const PRIME = {n:"Prime Guard, Rigby",ll:[43.672,-111.915]};
+
+/* ------------------------------- map setup -------------------------------- */
+const map = L.map('map',{zoomSnap:.25}).setView(BOISE,9);
+const base = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:16}).addTo(map);
+let swapped=false;
+base.on('tileerror',()=>{ if(swapped) return; swapped=true; map.removeLayer(base);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map); });
+
+/* true miles, so a ring stays a real 30 miles rather than a Mercator guess */
+function ring(c,mi,n=120){
+  const R=3958.8,d=mi/R,la=c[0]*Math.PI/180,lo=c[1]*Math.PI/180,o=[];
+  for(let i=0;i<n;i++){const t=2*Math.PI*i/n,
+    a=Math.asin(Math.sin(la)*Math.cos(d)+Math.cos(la)*Math.sin(d)*Math.cos(t)),
+    b=lo+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(la),Math.cos(d)-Math.sin(la)*Math.sin(a));
+    o.push([a*180/Math.PI,b*180/Math.PI]);}
+  return o;
+}
+function pop(title,tag,color,body){
+  return `<div class="pp"><h3>${title}</h3><span class="tag" style="background:${color}">${tag}</span><p>${body}</p></div>`;
+}
+function ringLabel(group,c,mi,text){
+  L.marker(ring(c,mi,4)[2],{opacity:0,interactive:false,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0]})})
+   .bindTooltip(text,{permanent:true,direction:'center',className:'ring-label'}).addTo(group);
+}
+
+const groups={a:L.layerGroup(),b:L.layerGroup(),c:L.layerGroup()};
+
+/* zone a: core ring inside the valley ring */
+L.polygon(ring(BOISE,15),{color:"#2f80ed",weight:2,fillColor:"#2f80ed",fillOpacity:.2})
+ .bindPopup(pop("The core, 0 to 15 miles","About 500,000 people","#2f80ed","Boise, Garden City, Meridian, Eagle and Kuna. The existing residential work and the dense commercial stock are here."))
+ .addTo(groups.a);
+L.polygon([ring(BOISE,30),ring(BOISE,15)],{color:"#2f80ed",weight:2,fillColor:"#2f80ed",fillOpacity:.09})
+ .bindPopup(pop("Rest of the Treasure Valley, 15 to 30 miles","About 260,000 people in the named towns","#2f80ed","Star, Nampa, Caldwell and Middleton. A 30-mile radius on Boise takes in the whole metro."))
+ .addTo(groups.a);
+ringLabel(groups.a,BOISE,15,"15 mi");
+ringLabel(groups.a,BOISE,30,"30 mi");
+
+/* zone b */
+L.polygon([ring(BOISE,60),ring(BOISE,30)],{color:"#27ae60",weight:2,dashArray:"6 6",fillColor:"#27ae60",fillOpacity:.07})
+ .bindPopup(pop("Zone B, the 60-mile ring","+141,000 people","#27ae60","Elmore, Gem, Payette, Washington, Owyhee and Boise counties, plus Malheur County in Oregon."))
+ .addTo(groups.b);
+ringLabel(groups.b,BOISE,60,"60 mi");
+
+/* zone c follows the valley itself, not a ring around Boise */
+L.polygon(ring([42.70,-114.20],47),{color:"#e67e22",weight:2,dashArray:"6 6",fillColor:"#e67e22",fillOpacity:.1})
+ .bindPopup(pop("Zone C, the Magic Valley","+210,000 people","#e67e22",ZONES.c.desc))
+ .addTo(groups.c);
+
+/* I-84 from Boise to the Magic Valley, the route that links the zones */
+L.polyline([[43.56,-116.18],[43.133,-115.691],[42.93,-115.30],[42.87,-114.85],[42.72,-114.50],[42.55,-113.79]],
+ {color:"#e67e22",weight:2.5,opacity:.55,dashArray:"2 7"}).addTo(groups.c);
+
+function townPopup(t){
+  const z=ZONES[t.z];
+  return `<div class="pp"><h3>${t.n}</h3><span class="tag" style="background:${z.color}">${z.name}</span>
+  <p>${t.b}</p>${(t.pop&&!t.county)||t.d?`<div class="dist">${!t.county&&t.pop?t.pop+' people':''}${!t.county&&t.pop&&t.d&&t.d!=='Center'?' · ':''}${t.d&&t.d!=='Center'?t.d+' by road':''}</div>`:''}</div>`;
+}
+TOWNS.forEach(t=>{
+  const m=L.circleMarker(t.ll,{radius:t.star?9:6,color:"#0d1420",weight:1.5,fillColor:ZONES[t.z].color,fillOpacity:.95}).bindPopup(townPopup(t));
+  m.bindTooltip(t.n,{permanent:true,direction:'right',offset:[8,0],className:'city-label'+(['Boise','Mountain Home','Twin Falls'].includes(t.n)?' lbl-star':'')});
+  m.addTo(groups[t.z]); t.marker=m;
+});
+const stockGroup=L.layerGroup().addTo(map);
+STOCK.forEach(s=>{
+  L.marker(s.ll,{icon:L.divIcon({className:'',html:'<div style="width:11px;height:11px;background:#fff;border:2px solid #2f80ed;transform:rotate(45deg)"></div>',iconSize:[11,11],iconAnchor:[6,6]})})
+   .bindTooltip(s.n,{direction:'top'}).bindPopup(pop(s.n,"Commercial stock","#fff",s.b)).addTo(stockGroup);
+});
+
+/* the east: stop line, context towns, Prime Guard */
+const eastGroup=L.layerGroup().addTo(map);
+const stopLine=[[41.95,-113.05],[44.45,-113.05]];
+L.polyline(stopLine,{color:"#e74c3c",weight:2.5,dashArray:"10 7"})
+ .bindPopup(pop("Stop here","Edge of the campaign","#e74c3c","East of Twin Falls you hit Pocatello and then Idaho Falls, roughly four hours from Boise.")).addTo(eastGroup);
+L.marker(stopLine[1],{opacity:0,interactive:false,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0]})})
+ .bindTooltip("Stop here",{permanent:true,direction:'center',className:'ring-label'}).addTo(eastGroup);
+EAST.forEach(e=>{
+  L.circleMarker(e.ll,{radius:5,color:"#0d1420",weight:1.5,fillColor:"#7d90ab",fillOpacity:.9}).bindPopup(pop(e.n,"Outside the campaign","#93a4ba",e.b))
+   .bindTooltip(e.n,{permanent:true,direction:'right',offset:[7,0],className:'city-label'}).addTo(eastGroup);
+});
+L.circleMarker(PRIME.ll,{radius:9,color:"#fff",weight:2,fillColor:"#e74c3c",fillOpacity:1})
+ .bindPopup(pop(PRIME.n,"No conflict","#e74c3c","About 280 miles east of Boise, near Idaho Falls. Everything in Zones A, B and C is open."))
+ .bindTooltip(PRIME.n,{permanent:true,direction:'left',offset:[-10,0],className:'city-label lbl-star'}).addTo(eastGroup);
+
+/* ------------------------------- interaction ------------------------------ */
+const PLANS={a:["a"],b:["a","b"],c:["a","b","c"]};
+const fmt=n=>n.toLocaleString('en-US');
+let plan="a", oregon=true;
+
+function total(){
+  const keys=PLANS[plan];
+  const exact=keys.reduce((s,k)=>s+ZONES[k].pop,0)-(!oregon&&keys.includes('b')?OREGON_POP:0);
+  /* the brief quotes the wider totals rounded to the nearest 10,000 */
+  return plan==="a"?fmt(exact):"≈ "+fmt(Math.round(exact/10000)*10000);
+}
+function bounds(){
+  const b=L.latLngBounds([]);
+  const add=l=>{ if(l.getBounds) b.extend(l.getBounds()); else if(l.getLatLng&&l.options.fillColor) b.extend(l.getLatLng()); };
+  PLANS[plan].forEach(k=>groups[k].eachLayer(add));
+  /* the full campaign view also frames Prime Guard, so the open ground reads at a glance */
+  if(plan==="c") b.extend(PRIME.ll);
+  return b;
+}
+function fit(){
+  map.fitBounds(bounds(),{padding:[28,28],maxZoom:11,animate:false});
+  labels();
+}
+function labels(){
+  const z=map.getZoom();
+  document.querySelectorAll('.city-label').forEach(el=>{
+    el.style.display=(z>=8.25||el.classList.contains('lbl-star'))?'':'none';
+  });
+}
+map.on('zoomend',labels);
+
+function render(){
+  const keys=PLANS[plan];
+  Object.keys(groups).forEach(k=>keys.includes(k)?groups[k].addTo(map):map.removeLayer(groups[k]));
+  const ontario=TOWNS.find(t=>t.or).marker;
+  if(!oregon) groups.b.removeLayer(ontario); else if(!groups.b.hasLayer(ontario)) groups.b.addLayer(ontario);
+  document.getElementById('popNum').textContent=total();
+  document.getElementById('orWrap').style.display=keys.includes('b')?'':'none';
+  document.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.plan===plan;t.classList.toggle('on',on);t.setAttribute('aria-pressed',on)});
+  const el=document.getElementById('zoneCards'); el.innerHTML='';
+  Object.keys(ZONES).forEach(k=>{
+    const z=ZONES[k], off=!keys.includes(k);
+    const list=TOWNS.filter(t=>t.z===k&&(oregon||!t.or));
+    const label=(k==='b'&&!oregon)?'+109,000':z.popLabel;
+    const card=document.createElement('div');
+    card.className='zone-card'+(off?' off':'');
+    card.innerHTML=`<div class="zone-head"><span class="dot" style="background:${z.color}"></span><b>${z.name}</b><span class="cnt">${label}</span></div>
+      <p>${z.span}. ${z.desc}</p>
+      <ul class="towns">${list.map(t=>`<li data-town="${t.n}"><span class="tn">${t.county||t.n}</span><span class="td">${[t.pop,t.d&&t.d!=='Center'?t.d:''].filter(Boolean).join(' · ')}</span></li>`).join('')}</ul>`;
+    card.addEventListener('click',e=>{
+      if(off){plan=k;render();fit();}
+      const li=e.target.closest('[data-town]');
+      if(li){
+        const t=TOWNS.find(x=>x.n===li.dataset.town);
+        map.setView(t.ll,Math.max(map.getZoom(),10),{animate:false});
+        t.marker.openPopup();
+      } else if(!off){
+        const b=L.latLngBounds([]);
+        groups[k].eachLayer(l=>{if(l.getBounds)b.extend(l.getBounds())});
+        map.fitBounds(b,{padding:[28,28],animate:false});
+      }
+      if(window.innerWidth<=820) document.getElementById('sidebar').classList.remove('open');
+    });
+    el.appendChild(card);
+  });
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{plan=t.dataset.plan;render();fit();}));
+document.getElementById('orBox').addEventListener('change',e=>{oregon=e.target.checked;render();});
+document.getElementById('mobToggle').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+window.addEventListener('resize',()=>map.invalidateSize());
+render(); fit();
+</script>
+</body>
+</html>
