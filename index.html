@@ -85,33 +85,37 @@
   <div class="ttl">
     <div class="brand">RoofCoat Leads</div>
     <h1>Southwest Idaho Territory Map</h1>
-    <div class="sub">Centered on Boise · all three zones open</div>
+    <div class="sub">Six separate markets, ordered from Boise</div>
   </div>
   <div class="tabs" role="group" aria-label="Campaign size">
-    <button class="tab" data-plan="a">Zone A</button>
-    <button class="tab" data-plan="b">A + B</button>
-    <button class="tab" data-plan="c">A + B + C</button>
+    <button class="tab" data-plan="a">Tier 1</button>
+    <button class="tab" data-plan="b">+ 2</button>
+    <button class="tab" data-plan="c">+ 3</button>
+    <button class="tab" data-plan="d">+ 4</button>
+    <button class="tab" data-plan="e">+ 5</button>
+    <button class="tab" data-plan="f">All Idaho</button>
   </div>
-  <div class="pop"><b id="popNum" aria-live="polite">876,760</b><span>People reached</span></div>
+  <div class="pop"><b id="popNum" aria-live="polite">930,000</b><span>People reached</span></div>
 </header>
 
 <div class="wrap">
-  <button class="mob-toggle" id="mobToggle">☰ Zones</button>
+  <button class="mob-toggle" id="mobToggle">☰ Tiers</button>
   <aside id="sidebar">
-    <div class="side-title">Territory zones</div>
-    <label class="check" id="orWrap"><input type="checkbox" id="orBox" checked>
-      <span>Include Ontario, Oregon<small>Malheur County, 32,000. Needs an Oregon CCB licence.</small></span></label>
+    <div class="side-title">Idaho by tier</div>
+    <label class="check" id="orWrap"><input type="checkbox" id="orBox">
+      <span>Include Ontario, Oregon<small>Adds Malheur County, 32,000, to Tier 1. Needs an Oregon CCB licence.</small></span></label>
     <label class="check"><input type="checkbox" id="moneyBox" checked>
-      <span>Show money neighborhoods<small>Residential coating targets, marked with gold rings. All of them sit in Zone A.</small></span></label>
+      <span>Show money neighborhoods<small>Residential coating targets, marked with gold rings. They appear with their tier.</small></span></label>
     <div id="zoneCards"></div>
     <div class="zone-card" id="moneyCard"><div class="zone-head"><span class="dot" style="background:#f5a623"></span><b>Money neighborhoods</b><span class="cnt" id="moneyCnt"></span></div>
       <p>Where high-value homes concentrate, for the residential side of the campaign.</p><ul class="towns" id="moneyList"></ul></div>
     <div class="side-title">How to read it</div>
-    <div class="note"><b>Biggest number:</b> run all three zones as one campaign. About 1,230,000 people.</div>
-    <div class="note"><b>Most efficient:</b> start with Zone A at the standard $1,500 plus $50 a day. It is one contiguous metro, and a 30-mile radius on Boise covers it. Zone C is the upsell once the first month works.</div>
-    <div class="note"><b>Roofs matter more than people.</b> Population is the headline, but commercial roof count is the real asset, and that sits in Zones A and C.</div>
-    <div class="note"><b>Zone C is two hours each way.</b> It only makes sense for a contractor who will travel for commercial jobs. Many coaters will for a 40,000 square foot roof.</div>
-    <div class="foot">Ring distances on the map are straight-line. Mileage in the lists is by road from Boise. Commercial markers, Boise Foothills and Warm Springs Mesa are approximate.<br><br>
+    <div class="note"><b>Idaho is six markets, not one.</b> About 2.03 million people, separated by mountains. Population is the headline, but commercial roof count is the real asset.</div>
+    <div class="note"><b>Tier 1 is the campaign.</b> About 930,000 people, all within 90 minutes of Boise, at the standard $1,500 plus $50 a day.</div>
+    <div class="note"><b>Tier 2 is the best second market.</b> Two hours down I-84, and almost all of the roof stock is low-slope metal. It makes sense for a contractor who will travel for a 40,000 square foot roof.</div>
+    <div class="note"><b>Tier 3 is worth a pin, not a campaign.</b> Few people, but the highest property values in Idaho.</div>
+    <div class="note"><b>Tiers 4 to 6 are different businesses.</b> North Idaho is seven hours by road through Oregon and Washington and works as part of the Spokane metro. Reaching it, or the east, takes its own crew.</div>
+    <div class="foot">Ring distances on the map are straight-line. Mileage in the lists is by road from Boise. Commercial markers, Boise Foothills, Warm Springs Mesa and every money neighborhood outside Tier 1 are approximate. The tiers add up to about 1.98 million; grey counties sit outside them. County outlines from the US Census.<br><br>
     Sources: Idaho Business Review, Treasure Valley population grows 150,000 in six years; COMPASS population estimates; CBRE emerging industrial market Boise.<br><br>
     Prepared by <a href="https://roofcoatleads.com" target="_blank" rel="noopener">RoofCoat Leads</a></div>
   </aside>
@@ -119,45 +123,95 @@
 </div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="idaho-counties.js"></script>
 <script>
 /* ---------------------------------- data ---------------------------------- */
 const BOISE = [43.615,-116.202];
 const ZONES = {
-  a:{name:"Zone A · Treasure Valley", span:"0 to 30 miles", pop:876760, popLabel:"876,760", color:"#2f80ed",
-     desc:"Ada and Canyon counties, up 150,000 people in six years. One contiguous metro, all of it about 35 minutes from Boise. Single-story strip retail, warehouses, schools and churches: the flat-roof stock a coating campaign feeds on."},
-  b:{name:"Zone B · 60-mile ring", span:"30 to 60 miles", pop:141000, popLabel:"+141,000", color:"#27ae60",
-     desc:"Small counties around the metro. More people, but fewer commercial roofs than A or C."},
-  c:{name:"Zone C · Magic Valley", span:"100 to 130 miles down I-84", pop:210000, popLabel:"+210,000", color:"#e67e22",
-     desc:"Twin Falls and the towns around it. Dairies, food processing plants and ag warehouses, which means a lot of low-slope metal roof. Two hours each way from Boise."}
+  a:{name:"Tier 1 · Treasure Valley", span:"0 to 60 miles, all within 90 minutes", pop:930000, popLabel:"930,000", color:"#2f80ed",
+     desc:"Ada County 546,000 and Canyon County 275,000 are the core, with six edge counties around them. Single-story strip retail, warehouses, schools and churches: the flat-roof stock a coating campaign feeds on."},
+  b:{name:"Tier 2 · Magic Valley", span:"125 to 160 miles southeast on I-84, two hours", pop:195000, popLabel:"+195,000", color:"#e67e22",
+     desc:"Dairies, potato and food processing plants, cold storage and ag warehouses, almost all low-slope metal. The best second market in the state for coatings."},
+  c:{name:"Tier 3 · Resort corridor", span:"Sun Valley 150 miles, two and three quarter hours; McCall is closer", pop:39000, popLabel:"+39,000", color:"#b37feb",
+     desc:"Tiny by population, but the highest property values in Idaho. Lodges, boutique retail, HOA complexes and second-home estates. Snow load and freeze-thaw damage low-slope roofs here, so a high-solids silicone coating stops leaks without a tear-off. Premium work."},
+  d:{name:"Tier 4 · North Idaho", span:"380 to 400 miles, seven hours by road through Oregon and Washington", pop:285000, popLabel:"+285,000", color:"#27ae60",
+     desc:"Growing fast and functionally part of the Spokane metro. Industrial parks along I-90, big-box retail, lake resorts and Sandpoint manufacturing. Reachable, but a different business with its own crew."},
+  e:{name:"Tier 5 · North Central", span:"270 miles, five hours", pop:114000, popLabel:"+114,000", color:"#ef5da8",
+     desc:"River port industrial around Lewiston and university housing around Moscow, so metal roof coating and multi-family work. Clarkston and Pullman sit just over the line and need Washington L&I registration."},
+  f:{name:"Tier 6 · Eastern and Southeast Idaho", span:"230 to 280 miles, three and a half to four hours", pop:420000, popLabel:"+420,000", color:"#2ec4b6",
+     desc:"The second largest block in the state, and the high-volume commercial corridor along I-15: ag processing, warehouses, rail, manufacturing and retail hubs."}
 };
 const OREGON_POP = 32000;
 
+/* which tier each county is shaded in; counties not listed stay grey */
+const COUNTY_TIER = {
+  a:{Ada:"546,000",Canyon:"275,000",Elmore:"29,000",Gem:"22,000",Payette:"28,000",Washington:"12,000",Owyhee:"13,000",Boise:"8,000"},
+  b:{"Twin Falls":"98,000",Jerome:"26,000",Cassia:"26,000",Minidoka:"23,000",Gooding:"16,000",Lincoln:"6,000"},
+  c:{Blaine:"26,000",Valley:"13,000"},
+  d:{Kootenai:"192,000",Bonner:"54,000",Boundary:"14,000",Shoshone:"14,000",Benewah:"11,000"},
+  e:{"Nez Perce":"43,000",Latah:"42,000",Idaho:"17,000",Clearwater:"",Lewis:""},
+  f:{Bonneville:"136,000",Bannock:"92,000",Madison:"55,000",Bingham:"51,000",Jefferson:"35,000",Fremont:"14,000",Teton:"13,000",Power:"",Caribou:"",Franklin:"",Oneida:"","Bear Lake":""}
+};
+
 const TOWNS = [
-  /* zone a, core */
+  /* tier 1, core */
   {n:"Boise",z:"a",ll:BOISE,star:1,pop:"256,000",d:"Center",b:"The anchor, with the densest commercial stock in the state."},
   {n:"Garden City",z:"a",ll:[43.650,-116.275],pop:"13,000",d:"4 mi",b:"The Chinden Boulevard industrial strip."},
   {n:"Meridian",z:"a",ll:[43.612,-116.392],star:1,pop:"152,000",d:"10 mi",b:"The fastest growing city in the state. Franklin Road and Eagle Road retail corridors."},
   {n:"Eagle",z:"a",ll:[43.695,-116.354],pop:"38,000",d:"10 mi",b:"Higher-end residential."},
   {n:"Kuna",z:"a",ll:[43.492,-116.420],pop:"39,000",d:"17 mi",b:"The newest subdivisions in the valley."},
-  /* zone a, rest of the valley */
+  /* tier 1, rest of the valley */
   {n:"Star",z:"a",ll:[43.692,-116.493],pop:"25,000",d:"20 mi",b:"Growing residential town between Eagle and Middleton."},
   {n:"Nampa",z:"a",ll:[43.574,-116.564],star:1,pop:"127,000",d:"20 mi",b:"Canyon County's hub. Heavy industrial along I-84 around Garrity, Karcher and the Idaho Center."},
   {n:"Caldwell",z:"a",ll:[43.663,-116.687],pop:"83,000",d:"27 mi",b:"Sky Ranch Business Park, Simplot and food processing plants."},
   {n:"Middleton",z:"a",ll:[43.707,-116.620],pop:"15,000",d:"28 mi",b:"Canyon County town on the north side of the valley."},
-  /* zone b */
-  {n:"Mountain Home",z:"b",ll:[43.133,-115.691],star:1,pop:"30,000",county:"Elmore County",d:"47 mi",b:"Air Force base town on I-84. Elmore County, 30,000; Mountain Home itself about 16,000."},
-  {n:"Emmett",z:"b",ll:[43.873,-116.499],pop:"21,000",county:"Gem County",d:"30 mi",b:"Gem County, 21,000; Emmett itself about 8,000. Close to Boise, but outside the Ada and Canyon count."},
-  {n:"Payette",z:"b",ll:[44.078,-116.934],pop:"27,000",county:"Payette County",b:"Payette County with Payette and Fruitland, 27,000."},
-  {n:"Weiser",z:"b",ll:[44.251,-116.969],pop:"11,000",county:"Washington County",b:"Washington County, 11,000."},
-  {n:"Murphy",z:"b",ll:[43.218,-116.552],pop:"12,000",county:"Owyhee County",b:"County seat of Owyhee County, 12,000."},
-  {n:"Idaho City",z:"b",ll:[43.829,-115.834],pop:"8,000",county:"Boise County",b:"County seat of Boise County, 8,000."},
-  {n:"Ontario, OR",z:"b",ll:[44.027,-116.963],pop:"32,000",county:"Malheur County, OR",d:"55 mi",or:1,b:"Malheur County, 32,000; Ontario itself about 12,000. Needs an Oregon CCB licence."},
-  /* zone c */
-  {n:"Twin Falls",z:"c",ll:[42.563,-114.460],star:1,pop:"55,000",d:"128 mi",b:"The hub of the Magic Valley. Two hours from Boise."},
-  {n:"Jerome",z:"c",ll:[42.724,-114.519],b:"Dairy and food processing country north of the Snake River."},
-  {n:"Gooding",z:"c",ll:[42.939,-114.713],b:"Dairies and ag buildings."},
-  {n:"Burley",z:"c",ll:[42.536,-113.793],b:"Food processing and ag warehouses on I-84."},
-  {n:"Rupert",z:"c",ll:[42.619,-113.677],b:"Ag warehouses and processing at the east end of the valley."}
+  /* tier 1, edge counties */
+  {n:"Mountain Home",z:"a",ll:[43.133,-115.691],star:1,pop:"29,000",county:"Elmore County",d:"47 mi",b:"Air Force base town on I-84. Elmore County, 29,000; Mountain Home itself about 16,000."},
+  {n:"Emmett",z:"a",ll:[43.873,-116.499],pop:"22,000",county:"Gem County",d:"30 mi",b:"Gem County, 22,000; Emmett itself about 8,000."},
+  {n:"Payette",z:"a",ll:[44.078,-116.934],pop:"28,000",county:"Payette County",b:"Payette County with Payette and Fruitland, 28,000."},
+  {n:"Weiser",z:"a",ll:[44.251,-116.969],pop:"12,000",county:"Washington County",b:"Washington County, 12,000."},
+  {n:"Murphy",z:"a",ll:[43.218,-116.552],pop:"13,000",county:"Owyhee County",b:"County seat of Owyhee County, 13,000."},
+  {n:"Idaho City",z:"a",ll:[43.829,-115.834],pop:"8,000",county:"Boise County",b:"County seat of Boise County, 8,000."},
+  {n:"Ontario, OR",z:"a",ll:[44.027,-116.963],pop:"32,000",county:"Malheur County, OR",d:"55 mi",or:1,b:"Malheur County, 32,000; Ontario itself about 12,000. Needs an Oregon CCB licence."},
+  /* tier 2 */
+  {n:"Twin Falls",z:"b",ll:[42.563,-114.460],star:1,pop:"98,000",county:"Twin Falls County",d:"128 mi",b:"The hub of the Magic Valley. Twin Falls County, 98,000."},
+  {n:"Jerome",z:"b",ll:[42.724,-114.519],pop:"26,000",county:"Jerome County",b:"Dairy and food processing country north of the Snake River. Jerome County, 26,000."},
+  {n:"Burley",z:"b",ll:[42.536,-113.793],pop:"26,000",county:"Cassia County",b:"Food processing and ag warehouses on I-84. Cassia County, 26,000."},
+  {n:"Rupert",z:"b",ll:[42.619,-113.677],pop:"23,000",county:"Minidoka County",b:"Ag warehouses and processing at the east end of the valley. Minidoka County, 23,000."},
+  {n:"Gooding",z:"b",ll:[42.939,-114.713],pop:"16,000",county:"Gooding County",b:"Dairies and ag buildings. Gooding County, 16,000."},
+  {n:"Shoshone, ID",z:"b",ll:[42.936,-114.406],pop:"6,000",county:"Lincoln County",b:"County seat of Lincoln County, 6,000."},
+  /* tier 3 */
+  {n:"Ketchum",z:"c",ll:[43.681,-114.363],star:1,pop:"26,000",county:"Blaine County",b:"Blaine County with Ketchum, Sun Valley, Hailey and Bellevue, 26,000. Boutique retail and resort commercial."},
+  {n:"Sun Valley",z:"c",ll:[43.697,-114.352],b:"Resort lodges and second-home estates in Blaine County."},
+  {n:"Hailey",z:"c",ll:[43.520,-114.315],b:"Blaine County, south of Ketchum."},
+  {n:"Bellevue",z:"c",ll:[43.464,-114.261],b:"Blaine County, the south end of the Wood River Valley."},
+  {n:"McCall",z:"c",ll:[44.911,-116.099],star:1,pop:"13,000",county:"Valley County",b:"Valley County, 13,000."},
+  /* tier 4 */
+  {n:"Coeur d'Alene",z:"d",ll:[47.678,-116.780],star:1,pop:"192,000",county:"Kootenai County",b:"Kootenai County with Coeur d'Alene, Post Falls, Hayden and Rathdrum, 192,000. Big-box and strip retail."},
+  {n:"Post Falls",z:"d",ll:[47.718,-117.011],b:"Kootenai County, on the Spokane side."},
+  {n:"Hayden",z:"d",ll:[47.766,-116.787],b:"Kootenai County, north of Coeur d'Alene."},
+  {n:"Rathdrum",z:"d",ll:[47.812,-116.897],b:"Kootenai County, north of Post Falls."},
+  {n:"Sandpoint",z:"d",ll:[48.277,-116.553],pop:"54,000",county:"Bonner County",b:"Bonner County, 54,000. Manufacturing and lumber."},
+  {n:"Bonners Ferry",z:"d",ll:[48.691,-116.316],pop:"14,000",county:"Boundary County",b:"County seat of Boundary County, 14,000."},
+  {n:"Wallace",z:"d",ll:[47.474,-115.928],pop:"14,000",county:"Shoshone County",b:"County seat of Shoshone County, 14,000."},
+  {n:"St. Maries",z:"d",ll:[47.314,-116.563],pop:"11,000",county:"Benewah County",b:"County seat of Benewah County, 11,000."},
+  /* tier 5 */
+  {n:"Lewiston",z:"e",ll:[46.417,-117.018],star:1,pop:"43,000",county:"Nez Perce County",b:"Nez Perce County, 43,000. Snake River port, paper and pulp, riverfront storage and ag warehouses."},
+  {n:"Moscow",z:"e",ll:[46.732,-117.000],pop:"42,000",county:"Latah County",b:"Latah County, 42,000. University of Idaho student housing and downtown mixed-use."},
+  {n:"Clarkston, WA",z:"e",ll:[46.416,-117.045],b:"Across the Snake River from Lewiston. Needs Washington L&I registration."},
+  {n:"Pullman, WA",z:"e",ll:[46.731,-117.180],b:"WSU student housing. Needs Washington L&I registration."},
+  {n:"Grangeville",z:"e",ll:[45.927,-116.122],pop:"17,000",county:"Idaho County",b:"County seat of Idaho County, 17,000."},
+  {n:"Orofino",z:"e",ll:[46.479,-116.255],pop:"12,000",county:"Clearwater and Lewis",b:"Clearwater and Lewis counties, 12,000 together."},
+  /* tier 6 */
+  {n:"Idaho Falls",z:"f",ll:[43.492,-112.034],star:1,pop:"136,000",county:"Bonneville County",b:"Bonneville County, 136,000. Tech corridors, medical complexes, strip centers and municipal buildings."},
+  {n:"Ammon",z:"f",ll:[43.470,-111.967],b:"Bonneville County, next to Idaho Falls."},
+  {n:"Pocatello",z:"f",ll:[42.871,-112.445],star:1,pop:"92,000",county:"Bannock County",b:"Bannock County, 92,000. Rail, manufacturing and logistics."},
+  {n:"Chubbuck",z:"f",ll:[42.921,-112.466],b:"Bannock County, next to Pocatello."},
+  {n:"Rexburg",z:"f",ll:[43.826,-111.789],pop:"55,000",county:"Madison County",b:"Madison County, 55,000. BYU-Idaho housing, multi-family and new retail."},
+  {n:"Blackfoot",z:"f",ll:[43.190,-112.345],pop:"51,000",county:"Bingham County",b:"Bingham County, 51,000. Ag processing with large standing seam metal and low-slope roofs."},
+  {n:"Rigby",z:"f",ll:[43.672,-111.915],pop:"35,000",county:"Jefferson County",b:"Jefferson County, 35,000."},
+  {n:"St. Anthony",z:"f",ll:[43.966,-111.683],pop:"14,000",county:"Fremont County",b:"County seat of Fremont County, 14,000."},
+  {n:"Driggs",z:"f",ll:[43.723,-111.111],pop:"13,000",county:"Teton County",b:"Largest town in Teton County, 13,000."}
 ];
 
 /* commercial stock named in the brief; positions approximate */
@@ -168,7 +222,18 @@ const STOCK = [
   {n:"Ten Mile interchange",ll:[43.590,-116.431],b:"Business parks on I-84."},
   {n:"Garrity and the Idaho Center",ll:[43.5955,-116.5077],b:"Heavy industrial along I-84 in Nampa."},
   {n:"Karcher",ll:[43.562,-116.598],b:"Industrial and retail on the west side of Nampa."},
-  {n:"Sky Ranch and food plants",ll:[43.640,-116.640],b:"Sky Ranch Business Park, Simplot and food processing in Caldwell."}
+  {n:"Sky Ranch and food plants",ll:[43.640,-116.640],b:"Sky Ranch Business Park, Simplot and food processing in Caldwell."},
+  {n:"Wood River resort commercial",z:"c",ll:[43.660,-114.375],b:"Lodges, boutique retail, municipal buildings and commercial storage."},
+  {n:"Post Falls I-90 industrial parks",z:"d",ll:[47.700,-116.950],b:"Large industrial parks along I-90."},
+  {n:"Coeur d'Alene retail",z:"d",ll:[47.705,-116.790],b:"Big-box and strip retail."},
+  {n:"Lake Coeur d'Alene resorts",z:"d",ll:[47.640,-116.760],b:"Resort properties along the lake."},
+  {n:"Sandpoint lumber and manufacturing",z:"d",ll:[48.300,-116.560],b:"Manufacturing and lumber facilities."},
+  {n:"Port of Lewiston",z:"e",ll:[46.425,-116.990],b:"Port facilities, paper and pulp, riverfront storage and ag warehouses along the Snake River."},
+  {n:"Moscow and Pullman student housing",z:"e",ll:[46.730,-117.090],b:"Multi-family housing for the University of Idaho and WSU."},
+  {n:"Idaho Falls and Ammon commercial",z:"f",ll:[43.490,-112.000],b:"Tech corridors, medical complexes, strip centers and municipal buildings."},
+  {n:"Pocatello rail and manufacturing",z:"f",ll:[42.890,-112.470],b:"Rail facilities, manufacturing plants and logistics hubs."},
+  {n:"Blackfoot ag processing",z:"f",ll:[43.170,-112.360],b:"Large-footprint standing seam metal and low-slope BUR or single-ply roofs."},
+  {n:"BYU-Idaho housing",z:"f",ll:[43.815,-111.785],b:"Student housing, multi-family and retail expansion in Rexburg."}
 ];
 
 /* the money neighborhoods; hollow rings so Eagle sits around its town pin.
@@ -180,15 +245,26 @@ const MONEY = [
   {n:"Hidden Springs",ll:[43.730,-116.265],b:"Foothills community north of Boise."},
   {n:"Boise Foothills",ll:[43.665,-116.180],approx:1,b:"Somerset Ridge and Quail Ridge."},
   {n:"Warm Springs Mesa",ll:[43.592,-116.150],approx:1,b:"East Boise."},
-  {n:"Spurwing and Paramount",ll:[43.655,-116.395],b:"North Meridian."}
+  {n:"Spurwing and Paramount",ll:[43.655,-116.395],b:"North Meridian."},
+  {n:"Bigwood",z:"c",ll:[43.715,-114.385],approx:1,b:"Ketchum."},
+  {n:"Elkhorn and Fairway Nine",z:"c",ll:[43.672,-114.335],approx:1,b:"Sun Valley."},
+  {n:"Lane Ranch",z:"c",ll:[43.692,-114.340],approx:1,b:"Sun Valley."},
+  {n:"Indian Creek",z:"c",ll:[43.480,-114.250],approx:1,b:"Hailey."},
+  {n:"Greenhorn and Mid-Valley",z:"c",ll:[43.590,-114.330],approx:1,b:"Estates between Hailey and Ketchum."},
+  {n:"Sanders Beach",z:"d",ll:[47.668,-116.770],approx:1,b:"Coeur d'Alene."},
+  {n:"Gozzer Ranch",z:"d",ll:[47.560,-116.700],approx:1,b:"Ultra-luxury golf community on Lake Coeur d'Alene."},
+  {n:"Lake Coeur d'Alene waterfront",z:"d",ll:[47.620,-116.800],approx:1,b:"Luxury lakefront homes."},
+  {n:"Hayden Lake and Avondale",z:"d",ll:[47.750,-116.765],approx:1,b:"Hayden Lake Country Club estates and Avondale."},
+  {n:"Schweitzer Mountain",z:"d",ll:[48.368,-116.623],approx:1,b:"Resort homes above Sandpoint."},
+  {n:"Lake Pend Oreille estates",z:"d",ll:[48.230,-116.500],approx:1,b:"Sandpoint."},
+  {n:"Lewiston Orchards",z:"e",ll:[46.380,-116.970],approx:1,b:"Large estate lots, with the Country Club estates."},
+  {n:"Moscow Mountain",z:"e",ll:[46.800,-116.870],approx:1,b:"Large acreage properties."},
+  {n:"Skyline and Palouse View",z:"e",ll:[46.715,-117.030],approx:1,b:"Moscow estates and faculty homes."},
+  {n:"Comore Loma and The Foothills",z:"f",ll:[43.450,-111.930],approx:1,b:"Idaho Falls."},
+  {n:"Snake River Parkway and River Ridge",z:"f",ll:[43.515,-112.050],approx:1,b:"Idaho Falls."},
+  {n:"University Highlands",z:"f",ll:[42.870,-112.410],approx:1,b:"Pocatello."},
+  {n:"Mink Creek corridor",z:"f",ll:[42.770,-112.420],approx:1,b:"South of Pocatello."}
 ];
-
-/* east of the stop line, shown for context only */
-const EAST = [
-  {n:"Pocatello",ll:[42.871,-112.445],b:"Past the stop line. Not part of this campaign."},
-  {n:"Idaho Falls",ll:[43.492,-112.034],b:"Prime Guard's area, roughly four hours from Boise. Not part of this campaign."}
-];
-const PRIME = {n:"Prime Guard, Rigby",ll:[43.672,-111.915]};
 
 /* ------------------------------- map setup -------------------------------- */
 const map = L.map('map',{zoomSnap:.25}).setView(BOISE,9);
@@ -214,32 +290,37 @@ function ringLabel(group,c,mi,text){
    .bindTooltip(text,{permanent:true,direction:'center',className:'ring-label'}).addTo(group);
 }
 
-const groups={a:L.layerGroup(),b:L.layerGroup(),c:L.layerGroup()};
+const groups={a:L.layerGroup(),b:L.layerGroup(),c:L.layerGroup(),d:L.layerGroup(),e:L.layerGroup(),f:L.layerGroup()};
 
-/* zone a: core ring inside the valley ring */
+/* grey base so the whole state always reads, then each tier's counties on top */
+const tiered=Object.values(COUNTY_TIER).flatMap(Object.keys);
+Object.keys(COUNTIES).filter(n=>!tiered.includes(n)).forEach(n=>{
+  L.geoJSON(COUNTIES[n],{interactive:false,style:{color:"#3a4c64",weight:1,fillColor:"#7d90ab",fillOpacity:.06}}).addTo(map);
+});
+Object.entries(COUNTY_TIER).forEach(([k,list])=>{
+  const z=ZONES[k];
+  Object.entries(list).forEach(([n,p])=>{
+    L.geoJSON(COUNTIES[n],{skipFit:k==="a"&&!["Ada","Canyon"].includes(n),style:{color:z.color,weight:1,fillColor:z.color,fillOpacity:.16}})
+     .bindPopup(pop(n+" County",z.name,z.color,p?p+" people.":"Part of this tier."))
+     .addTo(groups[k]);
+  });
+});
+
+/* tier 1: rings around Boise */
 L.polygon(ring(BOISE,15),{color:"#2f80ed",weight:2,fillColor:"#2f80ed",fillOpacity:.2})
  .bindPopup(pop("The core, 0 to 15 miles","About 500,000 people","#2f80ed","Boise, Garden City, Meridian, Eagle and Kuna. The existing residential work and the dense commercial stock are here."))
  .addTo(groups.a);
 L.polygon([ring(BOISE,30),ring(BOISE,15)],{color:"#2f80ed",weight:2,fillColor:"#2f80ed",fillOpacity:.09})
- .bindPopup(pop("Rest of the Treasure Valley, 15 to 30 miles","About 260,000 people in the named towns","#2f80ed","Star, Nampa, Caldwell and Middleton. A 30-mile radius on Boise takes in the whole metro."))
+ .bindPopup(pop("Rest of the Treasure Valley, 15 to 30 miles","About 260,000 people in the named towns","#2f80ed","Star, Nampa, Caldwell and Middleton."))
  .addTo(groups.a);
+L.polygon(ring(BOISE,60),{color:"#2f80ed",weight:2,dashArray:"6 6",fill:false,interactive:false}).addTo(groups.a);
 ringLabel(groups.a,BOISE,15,"15 mi");
 ringLabel(groups.a,BOISE,30,"30 mi");
+ringLabel(groups.a,BOISE,60,"60 mi");
 
-/* zone b */
-L.polygon([ring(BOISE,60),ring(BOISE,30)],{color:"#27ae60",weight:2,dashArray:"6 6",fillColor:"#27ae60",fillOpacity:.07})
- .bindPopup(pop("Zone B, the 60-mile ring","+141,000 people","#27ae60","Elmore, Gem, Payette, Washington, Owyhee and Boise counties, plus Malheur County in Oregon."))
- .addTo(groups.b);
-ringLabel(groups.b,BOISE,60,"60 mi");
-
-/* zone c follows the valley itself, not a ring around Boise */
-L.polygon(ring([42.70,-114.20],47),{color:"#e67e22",weight:2,dashArray:"6 6",fillColor:"#e67e22",fillOpacity:.1})
- .bindPopup(pop("Zone C, the Magic Valley","+210,000 people","#e67e22",ZONES.c.desc))
- .addTo(groups.c);
-
-/* I-84 from Boise to the Magic Valley, the route that links the zones */
+/* I-84 from Boise to the Magic Valley */
 L.polyline([[43.56,-116.18],[43.133,-115.691],[42.93,-115.30],[42.87,-114.85],[42.72,-114.50],[42.55,-113.79]],
- {color:"#e67e22",weight:2.5,opacity:.55,dashArray:"2 7"}).addTo(groups.c);
+ {color:"#e67e22",weight:2.5,opacity:.55,dashArray:"2 7"}).addTo(groups.b);
 
 function townPopup(t){
   const z=ZONES[t.z];
@@ -248,65 +329,52 @@ function townPopup(t){
 }
 TOWNS.forEach(t=>{
   const m=L.circleMarker(t.ll,{radius:t.star?9:6,color:"#0d1420",weight:1.5,fillColor:ZONES[t.z].color,fillOpacity:.95}).bindPopup(townPopup(t));
-  m.bindTooltip(t.n,{permanent:true,direction:'right',offset:[8,0],className:'city-label'+(['Boise','Mountain Home','Twin Falls'].includes(t.n)?' lbl-star':'')});
+  m.bindTooltip(t.n,{permanent:true,direction:'right',offset:[8,0],className:'city-label'+(t.star?' lbl-star':'')});
   m.addTo(groups[t.z]); t.marker=m;
 });
 const stockGroup=L.layerGroup().addTo(map);
 STOCK.forEach(s=>{
-  L.marker(s.ll,{icon:L.divIcon({className:'',html:'<div style="width:11px;height:11px;background:#fff;border:2px solid #2f80ed;transform:rotate(45deg)"></div>',iconSize:[11,11],iconAnchor:[6,6]})})
-   .bindTooltip(s.n,{direction:'top'}).bindPopup(pop(s.n,"Commercial stock","#fff",s.b)).addTo(stockGroup);
+  s.layer=L.marker(s.ll,{icon:L.divIcon({className:'',html:'<div style="width:11px;height:11px;background:#fff;border:2px solid #2f80ed;transform:rotate(45deg)"></div>',iconSize:[11,11],iconAnchor:[6,6]})})
+   .bindTooltip(s.n,{direction:'top'}).bindPopup(pop(s.n,"Commercial stock","#fff",s.b));
 });
 
 const moneyGroup=L.layerGroup().addTo(map);
 MONEY.forEach(m=>{
-  L.circleMarker(m.ll,{radius:13,color:"#f5a623",weight:2.5,fillColor:"#f5a623",fillOpacity:.12})
-   .bindTooltip(m.n,{direction:'top'}).bindPopup(pop(m.n,"Money neighborhood","#f5a623",m.b)).addTo(moneyGroup);
+  m.layer=L.circleMarker(m.ll,{radius:13,color:"#f5a623",weight:2.5,fillColor:"#f5a623",fillOpacity:.12})
+   .bindTooltip(m.n,{direction:'top'}).bindPopup(pop(m.n,"Money neighborhood","#f5a623",m.b));
 });
-
-/* the east: stop line, context towns, Prime Guard */
-const eastGroup=L.layerGroup().addTo(map);
-const stopLine=[[41.95,-113.05],[44.45,-113.05]];
-L.polyline(stopLine,{color:"#e74c3c",weight:2.5,dashArray:"10 7"})
- .bindPopup(pop("Stop here","Edge of the campaign","#e74c3c","East of Twin Falls you hit Pocatello and then Idaho Falls, roughly four hours from Boise.")).addTo(eastGroup);
-L.marker(stopLine[1],{opacity:0,interactive:false,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0]})})
- .bindTooltip("Stop here",{permanent:true,direction:'center',className:'ring-label'}).addTo(eastGroup);
-EAST.forEach(e=>{
-  L.circleMarker(e.ll,{radius:5,color:"#0d1420",weight:1.5,fillColor:"#7d90ab",fillOpacity:.9}).bindPopup(pop(e.n,"Outside the campaign","#93a4ba",e.b))
-   .bindTooltip(e.n,{permanent:true,direction:'right',offset:[7,0],className:'city-label'}).addTo(eastGroup);
-});
-L.circleMarker(PRIME.ll,{radius:9,color:"#fff",weight:2,fillColor:"#e74c3c",fillOpacity:1})
- .bindPopup(pop(PRIME.n,"No conflict","#e74c3c","About 280 miles east of Boise, near Idaho Falls. Everything in Zones A, B and C is open."))
- .bindTooltip(PRIME.n,{permanent:true,direction:'left',offset:[-10,0],className:'city-label lbl-star'}).addTo(eastGroup);
 
 /* ------------------------------- interaction ------------------------------ */
 document.getElementById('moneyCnt').textContent=MONEY.length;
-document.getElementById('moneyList').innerHTML=MONEY.map((m,i)=>`<li data-m="${i}"><span class="tn">${m.n}</span></li>`).join('');
+document.getElementById('moneyList').innerHTML=MONEY.map((m,i)=>`<li data-m="${i}"><span class="tn">${m.n}</span><span class="td">${ZONES[m.z||"a"].name.split(" ·")[0]}</span></li>`).join('');
 document.getElementById('moneyList').addEventListener('click',e=>{
   const li=e.target.closest('[data-m]'); if(!li) return;
   const box=document.getElementById('moneyBox');
   if(!box.checked){box.checked=true;moneyGroup.addTo(map);}
   const m=MONEY[+li.dataset.m];
+  if(!PLANS[plan].includes(m.z||"a")){plan=m.z;render();}
   map.setView(m.ll,12,{animate:false});
-  moneyGroup.getLayers()[+li.dataset.m].openPopup();
+  m.layer.openPopup();
   if(window.innerWidth<=820) document.getElementById('sidebar').classList.remove('open');
 });
 document.getElementById('moneyBox').addEventListener('change',e=>e.target.checked?moneyGroup.addTo(map):map.removeLayer(moneyGroup));
-const PLANS={a:["a"],b:["a","b"],c:["a","b","c"]};
+const ORDER=["a","b","c","d","e","f"];
+const PLANS=Object.fromEntries(ORDER.map((k,i)=>[k,ORDER.slice(0,i+1)]));
 const fmt=n=>n.toLocaleString('en-US');
-let plan="a", oregon=true;
+let plan="a", oregon=false;
 
 function total(){
-  const keys=PLANS[plan];
-  const exact=keys.reduce((s,k)=>s+ZONES[k].pop,0)-(!oregon&&keys.includes('b')?OREGON_POP:0);
-  /* the brief quotes the wider totals rounded to the nearest 10,000 */
-  return plan==="a"?fmt(exact):"≈ "+fmt(Math.round(exact/10000)*10000);
+  const exact=PLANS[plan].reduce((s,k)=>s+ZONES[k].pop,0)+(oregon?OREGON_POP:0);
+  return (plan==="a"?"":"≈ ")+fmt(Math.round(exact/10000)*10000);
+}
+function extend(b,l){
+  if(l.options.skipFit||l.options.interactive===false&&!l.getBounds) return;
+  if(l.getBounds) b.extend(l.getBounds()); else if(l.getLatLng&&l.options.fillColor) b.extend(l.getLatLng());
 }
 function bounds(){
   const b=L.latLngBounds([]);
-  const add=l=>{ if(l.getBounds) b.extend(l.getBounds()); else if(l.getLatLng&&l.options.fillColor) b.extend(l.getLatLng()); };
-  PLANS[plan].forEach(k=>groups[k].eachLayer(add));
-  /* the full campaign view also frames Prime Guard, so the open ground reads at a glance */
-  if(plan==="c") b.extend(PRIME.ll);
+  if(plan==="a"){groups.a.eachLayer(l=>extend(b,l));return b;}
+  PLANS[plan].forEach(k=>groups[k].eachLayer(l=>l.getBounds&&b.extend(l.getBounds())));
   return b;
 }
 function fit(){
@@ -324,16 +392,16 @@ map.on('zoomend',labels);
 function render(){
   const keys=PLANS[plan];
   Object.keys(groups).forEach(k=>keys.includes(k)?groups[k].addTo(map):map.removeLayer(groups[k]));
+  [[STOCK,stockGroup],[MONEY,moneyGroup]].forEach(([list,g])=>list.forEach(x=>keys.includes(x.z||"a")?g.addLayer(x.layer):g.removeLayer(x.layer)));
   const ontario=TOWNS.find(t=>t.or).marker;
-  if(!oregon) groups.b.removeLayer(ontario); else if(!groups.b.hasLayer(ontario)) groups.b.addLayer(ontario);
+  if(!oregon) groups.a.removeLayer(ontario); else if(!groups.a.hasLayer(ontario)) groups.a.addLayer(ontario);
   document.getElementById('popNum').textContent=total();
-  document.getElementById('orWrap').style.display=keys.includes('b')?'':'none';
   document.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.plan===plan;t.classList.toggle('on',on);t.setAttribute('aria-pressed',on)});
   const el=document.getElementById('zoneCards'); el.innerHTML='';
   Object.keys(ZONES).forEach(k=>{
     const z=ZONES[k], off=!keys.includes(k);
     const list=TOWNS.filter(t=>t.z===k&&(oregon||!t.or));
-    const label=(k==='b'&&!oregon)?'+109,000':z.popLabel;
+    const label=(k==='a'&&oregon)?'962,000':z.popLabel;
     const card=document.createElement('div');
     card.className='zone-card'+(off?' off':'');
     card.innerHTML=`<div class="zone-head"><span class="dot" style="background:${z.color}"></span><b>${z.name}</b><span class="cnt">${label}</span></div>
@@ -348,7 +416,7 @@ function render(){
         t.marker.openPopup();
       } else if(!off){
         const b=L.latLngBounds([]);
-        groups[k].eachLayer(l=>{if(l.getBounds)b.extend(l.getBounds())});
+        groups[k].eachLayer(l=>extend(b,l));
         map.fitBounds(b,{padding:[28,28],animate:false});
       }
       if(window.innerWidth<=820) document.getElementById('sidebar').classList.remove('open');
